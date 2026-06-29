@@ -1,0 +1,6 @@
+{
+  "name": "System Maintenance Countdown",
+  "description": "An interactive, beautifully animated system maintenance page featuring custom animated workers and a real-time countdown timer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
