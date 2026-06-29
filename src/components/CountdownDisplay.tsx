@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Clock, AlertCircle } from "lucide-react";
+import { maintenanceConfig, projectDetails } from "../data";
 
 interface CountdownDisplayProps {
-  initialHours: number;
   onTimeUp?: () => void;
 }
 
-export default function CountdownDisplay({ initialHours = 264, onTimeUp }: CountdownDisplayProps) {
+export default function CountdownDisplay({ onTimeUp }: CountdownDisplayProps) {
+  const initialHours = maintenanceConfig.targetHours;
+  
   // Store target end time in state (so it persists across component updates)
   const [targetTime] = useState<Date>(() => {
     const time = new Date();
@@ -67,7 +69,7 @@ export default function CountdownDisplay({ initialHours = 264, onTimeUp }: Count
   ];
 
   return (
-    <div className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full">
+    <div className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full min-h-[360px]">
       {/* Glow highlight */}
       <div className="absolute top-0 right-1/4 w-40 h-40 bg-amber-500/5 rounded-full filter blur-3xl pointer-events-none" />
 
@@ -75,15 +77,15 @@ export default function CountdownDisplay({ initialHours = 264, onTimeUp }: Count
       <div className="space-y-1 pb-4 border-b border-slate-800/60">
         <div className="flex items-center space-x-2 text-amber-500">
           <Clock className="h-4 w-4 animate-spin" style={{ animationDuration: "12s" }} />
-          <span className="font-mono text-xs tracking-widest font-bold">SYSTEM_LOCK.SYS</span>
+          <span className="font-mono text-xs tracking-widest font-bold">SYSTEM LOCKED</span>
         </div>
         <h2 className="text-sm font-semibold font-mono tracking-wider text-slate-300">
-          SECURE_EST_OFFLINE_COUNTER
+          {maintenanceConfig.systemTitle.toUpperCase()}
         </h2>
       </div>
 
       {/* Main Countdown Board */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4 my-6">
+      <div className="grid grid-cols-3 gap-3 md:gap-4 my-auto py-4">
         {timeUnits.map((unit, index) => (
           <div key={unit.label} className="relative group">
             {/* Ambient Card Glow */}
