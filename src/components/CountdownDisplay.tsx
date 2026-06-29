@@ -4,9 +4,10 @@ import { maintenanceConfig, projectDetails } from "../data";
 
 interface CountdownDisplayProps {
   onTimeUp?: () => void;
+  variant?: "card" | "navbar";
 }
 
-export default function CountdownDisplay({ onTimeUp }: CountdownDisplayProps) {
+export default function CountdownDisplay({ onTimeUp, variant = "card" }: CountdownDisplayProps) {
   const initialHours = maintenanceConfig.targetHours;
   
   // Store target end time in state (so it persists across component updates)
@@ -61,7 +62,49 @@ export default function CountdownDisplay({ onTimeUp }: CountdownDisplayProps) {
     return num.toString().padStart(2, "0");
   };
 
-  // Display labels
+  if (variant === "navbar") {
+    return (
+      <div className="w-full bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl px-4 py-2.5 shadow-xl flex items-center justify-between gap-3 text-xs font-mono">
+        {/* Left Side: System status & label */}
+        <div className="flex items-center space-x-2 text-slate-300">
+          <Clock className="h-4 w-4 text-amber-500 animate-spin" style={{ animationDuration: "12s" }} />
+          <span className="font-bold tracking-wider text-[11px] text-amber-500 whitespace-nowrap">
+            SYSTEM LOCKED
+          </span>
+          <span className="text-[10px] text-slate-600 hidden sm:inline">|</span>
+          <span className="text-[10px] text-slate-400 font-bold hidden sm:inline uppercase tracking-wider">
+            {maintenanceConfig.systemTitle}
+          </span>
+        </div>
+
+        {/* Center Side: Countdown Board inside rounded badge */}
+        <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/60 rounded-full px-3.5 py-1 font-mono font-bold shadow-inner">
+          <span className="text-slate-500 text-[9px] tracking-wider mr-1 uppercase hidden xs:inline">Time Left:</span>
+          <span className="text-white text-xs">{padZero(timeLeft.hours)}</span>
+          <span className="text-amber-500/80 animate-pulse">:</span>
+          <span className="text-white text-xs">{padZero(timeLeft.minutes)}</span>
+          <span className="text-amber-500/80 animate-pulse">:</span>
+          <span className="text-white text-xs text-amber-500">{padZero(timeLeft.seconds)}</span>
+        </div>
+
+        {/* Right Side: Progress Sync Bar */}
+        <div className="flex items-center space-x-2">
+          <div className="flex flex-col items-end text-right">
+            <span className="text-[9px] text-slate-500 font-bold tracking-wider leading-none uppercase">
+              {isCompleted ? "COMPLETED" : "UPGRADE"}
+            </span>
+            <span className="text-[10px] text-amber-500 font-bold leading-none mt-1">
+              {isCompleted ? "100.00%" : `${(100 - timeLeft.progress).toFixed(2)}%`}
+            </span>
+          </div>
+          {/* Pulsing indicator */}
+          <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${isCompleted ? "bg-emerald-500 animate-ping" : "bg-amber-500 animate-pulse"}`} />
+        </div>
+      </div>
+    );
+  }
+
+  // Display labels for Card Variant
   const timeUnits = [
     { label: "HOURS", value: padZero(timeLeft.hours) },
     { label: "MINUTES", value: padZero(timeLeft.minutes) },
@@ -69,7 +112,7 @@ export default function CountdownDisplay({ onTimeUp }: CountdownDisplayProps) {
   ];
 
   return (
-    <div className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full min-h-[360px]">
+    <div className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full">
       {/* Glow highlight */}
       <div className="absolute top-0 right-1/4 w-40 h-40 bg-amber-500/5 rounded-full filter blur-3xl pointer-events-none" />
 

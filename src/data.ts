@@ -19,7 +19,7 @@ export interface UpdateLog {
   id: string;
   timestamp: string;
   component: string;
-  status: "COMPLETED" | "IN_PROGRESS" | "QUEUED";
+  status: "COMPLETED" | "IN_PROGRESS" | "IN-PROGRESS" | "QUEUED";
   description: string;
 }
 
