@@ -7,9 +7,9 @@ export interface ProjectDetails {
 }
 
 export interface MaintenanceConfig {
-  // Target date to end maintenance (e.g. "2026-07-15T18:00:00Z" or relative time calculated from startup)
-  // For the failsafe display, we can also configure initialHours directly.
-  targetHours: number; 
+  // ISO Date format or simple string that can be parsed by new Date() (e.g. "2026-06-27T00:00:00Z" and "2026-07-10T00:00:00Z")
+  startDate: string;
+  targetDate: string;
   systemTitle: string;
   systemSubtitle: string;
   systemDescription: string;
@@ -31,7 +31,8 @@ export const projectDetails: ProjectDetails = {
 };
 
 export const maintenanceConfig: MaintenanceConfig = {
-  targetHours: 264, // 264 hours requested by user earlier
+  startDate: "2026-06-27T00:00:00Z",
+  targetDate: "2026-07-10T00:00:00Z", // Countdown to July 10th 2026
   systemTitle: "Scheduled Maintenance",
   systemSubtitle: "Upgrading our systems to better serve you",
   systemDescription: "We are currently optimizing our database architecture and deploying security policies."

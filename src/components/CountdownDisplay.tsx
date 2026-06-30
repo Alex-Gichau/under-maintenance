@@ -8,14 +8,8 @@ interface CountdownDisplayProps {
 }
 
 export default function CountdownDisplay({ onTimeUp, variant = "card" }: CountdownDisplayProps) {
-  const initialHours = maintenanceConfig.targetHours;
-  
-  // Store target end time in state (so it persists across component updates)
-  const [targetTime] = useState<Date>(() => {
-    const time = new Date();
-    time.setMilliseconds(time.getMilliseconds() + initialHours * 60 * 60 * 1000);
-    return time;
-  });
+  const targetTime = new Date(maintenanceConfig.targetDate);
+  const startTime = new Date(maintenanceConfig.startDate);
 
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
@@ -24,7 +18,7 @@ export default function CountdownDisplay({ onTimeUp, variant = "card" }: Countdo
     progress: 100,
   });
 
-  const totalDurationMs = initialHours * 60 * 60 * 1000;
+  const totalDurationMs = targetTime.getTime() - startTime.getTime();
   const [isCompleted, setIsCompleted] = useState(false);
 
   // Recalculate remaining time
@@ -55,7 +49,7 @@ export default function CountdownDisplay({ onTimeUp, variant = "card" }: Countdo
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [targetTime, totalDurationMs, onTimeUp]);
+  }, [onTimeUp]);
 
   // Helper to pad numbers with leading zeros
   const padZero = (num: number): string => {
