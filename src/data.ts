@@ -23,11 +23,25 @@ export interface UpdateLog {
   description: string;
 }
 
+export interface SystemBannerConfig {
+  show: boolean;
+  message: string;
+  type: "warning" | "info" | "critical" | "success";
+  allowDismiss: boolean;
+}
+
 export const projectDetails: ProjectDetails = {
   appName: "STANDS | eRequisiton System",
   version: "v1.0.0",
   status: "Offline",
   alertText: "Scheduled Maintenance In Progress"
+};
+
+export const systemBannerConfig: SystemBannerConfig = {
+  show: true,
+  message: "CRITICAL UPDATE: Database optimization is currently running at 85% completion. Avoid system requests until completion.",
+  type: "warning",
+  allowDismiss: true,
 };
 
 export const maintenanceConfig: MaintenanceConfig = {
