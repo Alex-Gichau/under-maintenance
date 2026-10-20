@@ -59,3 +59,27 @@ Everything user-facing lives in `src/data.ts`:
    `npm run build`
 4. Type-check:
    `npm run lint`
+
+### Changelog
+
+The last 15 changes, newest first. They landed on 2026-10-20 across two commits
+(`d28b006` streamline into a single-viewport layout, `c522416` responsive redesign)
+plus the follow-up rebrand.
+
+| # | Change | Files |
+| --- | --- | --- |
+| 15 | **Rebrand** — the multi-colour `STANDS` letters replaced with a monochrome "System Maintenance" wordmark and neutral wrench badge; page title, meta description and favicon realigned | `src/App.tsx`, `src/data.ts`, `index.html`, `public/favicon.svg` |
+| 14 | **Dead code pruned** — five unused keyframes (`float`, `pulse-ring`, `slide-x`, `bob`, `soft-pulse`) and the unused `AccentTokens.hex` field removed | `src/index.css`, `src/theme.ts` |
+| 13 | **Confetti ownership moved to `App`** — the countdown now calls `onCelebrate()` instead of firing its own burst, with a `celebrationFired` ref guard so it plays exactly once | `src/App.tsx`, `src/components/CountdownDisplay.tsx` |
+| 12 | **Completion state** — a "We're back online" headline, 100% progress, a green validation notice and a *Celebrate* button replace the countdown once the window closes | `src/data.ts`, `src/App.tsx`, `src/components/CountdownDisplay.tsx` |
+| 11 | **Height-based responsive tiers** — `max-height: 700px / 640px / 560px` breakpoints added, because width breakpoints never fire on landscape phones | `src/App.tsx`, `src/components/CountdownDisplay.tsx` |
+| 10 | **Viewport-proportional vertical rhythm** — fixed pixel spacing replaced with `dvh` + `clamp()` so the layout rescales with the viewport instead of overflowing | `src/App.tsx`, `src/components/CountdownDisplay.tsx`, `src/components/UpgradeProgress.tsx` |
+| 9 | **Countdown card compacted** — smaller header, tighter digit grid, and labels that drop out on short viewports | `src/components/CountdownDisplay.tsx` |
+| 8 | **Navbar countdown variant removed** — the header-embedded variant and its `navItems` export deleted | `src/components/CountdownDisplay.tsx`, `src/data.ts` |
+| 7 | **Progress tracker replaced** — the cartoon SVG steamroller scene was swapped for a compact horizontal 4-segment stepper | `src/components/UpgradeProgress.tsx` (new), `src/components/AnimatedWorkers.tsx` (deleted) |
+| 6 | **Single-viewport shell** — the root became `flex h-dvh overflow-hidden` and `main` became `flex-1 min-h-0 overflow-hidden`, removing page-level scrolling | `src/App.tsx` |
+| 5 | **Big footer replaced** — the multi-column footer became a slim one-line bar (website, version, support email, back-online date) | `src/App.tsx` |
+| 4 | **Support section removed** — the full-width contact section was dropped in favour of the slim footer bar | `src/App.tsx` |
+| 3 | **"What's new" section removed** — the `featureCards` export deleted with it | `src/App.tsx`, `src/data.ts` |
+| 2 | **"Live status" section removed** — the `status` section dropped in favour of the always-visible countdown card | `src/App.tsx`, `src/data.ts` |
+| 1 | **Rubik typography** — the font stack and the Google Fonts link now load Rubik (Gotham was rejected as not freely licensed) | `src/index.css`, `index.html` |
