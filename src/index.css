@@ -1,1 +1,176 @@
 @import "tailwindcss";
+
+@theme {
+  /* Typography — Google-first stack */
+  --font-sans: "Google Sans", "Product Sans", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Google brand palette */
+  --color-g-blue: #4285f4;
+  --color-g-red: #ea4335;
+  --color-g-yellow: #fbbc05;
+  --color-g-green: #34a853;
+
+  /* Neutral ink scale */
+  --color-ink-900: #202124;
+  --color-ink-800: #3c4043;
+  --color-ink-600: #5f6368;
+  --color-ink-400: #80868b;
+  --color-ink-200: #bdc1c6;
+
+  /* Surfaces & lines */
+  --color-line: #e8eaed;
+  --color-line-soft: #f1f3f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f9fa;
+  --color-surface-blue: #e8f0fe;
+  --color-surface-green: #e6f4ea;
+  --color-surface-yellow: #fef7e0;
+  --color-surface-red: #fce8e6;
+
+  /* Shadows — very soft, Google-like */
+  --shadow-card: 0 1px 2px rgba(60, 64, 67, 0.06), 0 1px 3px rgba(60, 64, 67, 0.1);
+  --shadow-float: 0 4px 12px rgba(60, 64, 67, 0.1), 0 1px 3px rgba(60, 64, 67, 0.08);
+  --shadow-modal: 0 12px 48px rgba(60, 64, 67, 0.18);
+
+  /* Motion */
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-slide-x: slide-x 7s ease-in-out infinite;
+  --animate-bob: bob 3.2s ease-in-out infinite;
+  --animate-soft-pulse: soft-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-34px);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: var(--color-ink-800);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: #d2e3fc;
+    color: #174ea6;
+  }
+
+  /* Keyboard focus ring — Google style */
+  :focus-visible {
+    outline: 2px solid var(--color-g-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  /* Slim, unobtrusive scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #dadce0 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #dadce0;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  /* Google blue underline for nav links */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    height: 2px;
+    width: 100%;
+    border-radius: 9999px;
+    background-color: var(--color-g-blue);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-underline:hover::after {
+    transform: scaleX(1);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

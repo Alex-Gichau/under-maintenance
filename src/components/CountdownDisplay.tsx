@@ -1,14 +1,22 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Clock, AlertCircle, Sparkles } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { maintenanceConfig, projectDetails } from "../data";
-import confetti from "canvas-confetti";
 
 interface CountdownDisplayProps {
   onTimeUp?: () => void;
   variant?: "card" | "navbar";
+  /** Notifies the parent of the live progress (0–100) and completion state. */
+  onProgress?: (progress: number, isCompleted: boolean) => void;
+  /** Fires the celebration burst. Owned by the parent so only one burst plays. */
+  onCelebrate?: () => void;
 }
 
-export default function CountdownDisplay({ onTimeUp, variant = "card" }: CountdownDisplayProps) {
+export default function CountdownDisplay({
+  onTimeUp,
+  variant = "card",
+  onProgress,
+  onCelebrate,
+}: CountdownDisplayProps) {
   const targetTime = new Date(maintenanceConfig.targetDate);
   const startTime = new Date(maintenanceConfig.startDate);
 
@@ -21,38 +29,11 @@ export default function CountdownDisplay({ onTimeUp, variant = "card" }: Countdo
 
   const totalDurationMs = targetTime.getTime() - startTime.getTime();
   const [isCompleted, setIsCompleted] = useState(false);
-  const confettiFired = useRef(false);
+  const completionReported = useRef(false);
 
-  // Trigger high-quality celebratory confetti shower
-  const fireCelebration = () => {
-    // Left burst
-    confetti({
-      particleCount: 80,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.8 },
-      colors: ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"]
-    });
-    // Right burst
-    confetti({
-      particleCount: 80,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.8 },
-      colors: ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"]
-    });
-
-    // Staggered center burst
-    setTimeout(() => {
-      confetti({
-        particleCount: 50,
-        angle: 90,
-        spread: 80,
-        origin: { x: 0.5, y: 0.6 },
-        colors: ["#fbbf24", "#34d399", "#f43f5e"]
-      });
-    }, 250);
-  };
+  const fireCelebration = useCallback(() => {
+    onCelebrate?.();
+  }, [onCelebrate]);
 
   // Recalculate remaining time
   useEffect(() => {
@@ -63,91 +44,112 @@ export default function CountdownDisplay({ onTimeUp, variant = "card" }: Countdo
       if (difference <= 0) {
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0, progress: 0 });
         setIsCompleted(true);
-        
-        // Trigger confetti once upon reaching zero
-        if (!confettiFired.current) {
-          confettiFired.current = true;
+
+        if (!completionReported.current) {
+          completionReported.current = true;
           fireCelebration();
         }
 
-        if (onTimeUp) onTimeUp();
+        onProgress?.(100, true);
+        onTimeUp?.();
         return;
       }
 
       setIsCompleted(false);
-      confettiFired.current = false;
+      completionReported.current = false;
       const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference / (1000 * 60)) % 60);
       const seconds = Math.floor((difference / 1000) % 60);
 
-      // Progress bar percentage (remaining / total)
-      const progress = Math.max(0, Math.min(100, (difference / totalDurationMs) * 100));
+      // Percentage of the maintenance window already elapsed
+      const elapsed =
+        totalDurationMs > 0
+          ? Math.max(0, Math.min(100, ((totalDurationMs - difference) / totalDurationMs) * 100))
+          : 0;
 
-      setTimeLeft({ hours, minutes, seconds, progress });
+      setTimeLeft({ hours, minutes, seconds, progress: elapsed });
+      onProgress?.(elapsed, false);
     };
 
     calculateTimeLeft(); // Run immediately
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [onTimeUp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onTimeUp, onProgress]);
 
   // Helper to pad numbers with leading zeros
-  const padZero = (num: number): string => {
-    return num.toString().padStart(2, "0");
-  };
+  const padZero = (num: number): string => num.toString().padStart(2, "0");
+
+  const accent = isCompleted ? "text-g-green" : "text-g-blue";
+  const accentSoft = isCompleted ? "bg-surface-green" : "bg-surface-blue";
 
   if (variant === "navbar") {
     return (
-      <div className={`w-full bg-slate-900/80 backdrop-blur-md border rounded-2xl px-4 py-2.5 shadow-xl flex items-center justify-between gap-3 text-xs font-mono transition-all duration-1000 ${
-        isCompleted ? "border-emerald-500/50 shadow-emerald-500/5" : "border-slate-800/80"
-      }`}>
-        {/* Left Side: System status & label */}
-        <div className="flex items-center space-x-2 text-slate-300">
-          <Clock className={`h-4 w-4 ${isCompleted ? "text-emerald-400" : "text-amber-500 animate-spin"}`} style={{ animationDuration: "12s" }} />
-          <span className={`font-bold tracking-wider text-[11px] whitespace-nowrap ${isCompleted ? "text-emerald-400" : "text-amber-500"}`}>
-            {isCompleted ? "SYSTEM ONLINE" : "SYSTEM LOCKED"}
+      <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-3 shadow-card sm:flex-nowrap">
+        {/* Left: status */}
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex h-2 w-2">
+            {isCompleted ? (
+              <span className="h-2 w-2 rounded-full bg-g-green" />
+            ) : (
+              <>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-g-blue opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-g-blue" />
+              </>
+            )}
           </span>
-          <span className="text-[10px] text-slate-600 hidden sm:inline">|</span>
-          <span className="text-[10px] text-slate-400 font-bold hidden sm:inline uppercase tracking-wider">
-            {maintenanceConfig.systemTitle}
+          <span className={`text-sm font-semibold ${accent}`}>
+            {isCompleted ? "System online" : "System locked"}
           </span>
         </div>
 
-        {/* Center Side: Countdown Board inside rounded badge */}
-        <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/60 rounded-full px-3.5 py-1 font-mono font-bold shadow-inner">
+        {/* Center: countdown */}
+        <div className="flex items-center gap-3">
           {isCompleted ? (
-            <button 
-              onClick={fireCelebration} 
-              className="text-emerald-400 text-[10px] flex items-center gap-1 hover:text-emerald-300 transition-colors"
+            <button
+              onClick={fireCelebration}
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface-green px-3 py-1 text-xs font-medium text-g-green transition-colors hover:bg-g-green hover:text-white"
             >
-              <Sparkles className="h-3 w-3 text-emerald-400 animate-pulse" />
-              CELEBRATE 🎉
+              <Sparkles className="h-3.5 w-3.5" />
+              Celebrate
             </button>
           ) : (
-            <>
-              <span className="text-slate-500 text-[9px] tracking-wider mr-1 uppercase hidden xs:inline">Time Left:</span>
-              <span className="text-white text-xs">{padZero(timeLeft.hours)}</span>
-              <span className="text-amber-500/80 animate-pulse">:</span>
-              <span className="text-white text-xs">{padZero(timeLeft.minutes)}</span>
-              <span className="text-amber-500/80 animate-pulse">:</span>
-              <span className="text-white text-xs text-amber-500">{padZero(timeLeft.seconds)}</span>
-            </>
+            <div className="flex items-center gap-1.5">
+              {[
+                { value: timeLeft.hours, label: "h" },
+                { value: timeLeft.minutes, label: "m" },
+                { value: timeLeft.seconds, label: "s" },
+              ].map((unit) => (
+                <div
+                  key={unit.label}
+                  className="flex items-baseline gap-0.5 rounded-lg bg-surface-alt px-2 py-1"
+                >
+                  <span className="tabular text-sm font-semibold text-ink-900">
+                    {padZero(unit.value)}
+                  </span>
+                  <span className="text-[10px] text-ink-400">{unit.label}</span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Right Side: Progress Sync Bar */}
-        <div className="flex items-center space-x-2">
-          <div className="flex flex-col items-end text-right">
-            <span className={`text-[9px] font-bold tracking-wider leading-none uppercase ${isCompleted ? "text-emerald-500" : "text-slate-500"}`}>
-              {isCompleted ? "COMPLETED" : "UPGRADE"}
-            </span>
-            <span className={`text-[10px] font-bold leading-none mt-1 ${isCompleted ? "text-emerald-400" : "text-amber-500"}`}>
-              {isCompleted ? "100.00%" : `${(100 - timeLeft.progress).toFixed(2)}%`}
-            </span>
+        {/* Right: progress */}
+        <div className="flex items-center gap-3">
+          <div className="hidden w-28 sm:block">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-line-soft">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                  isCompleted ? "bg-g-green" : "bg-g-blue"
+                }`}
+                style={{ width: `${isCompleted ? 100 : timeLeft.progress}%` }}
+              />
+            </div>
           </div>
-          {/* Pulsing indicator */}
-          <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${isCompleted ? "bg-emerald-500 animate-ping" : "bg-amber-500 animate-pulse"}`} />
+          <span className={`tabular text-sm font-semibold ${accent}`}>
+            {(isCompleted ? 100 : timeLeft.progress).toFixed(1)}%
+          </span>
         </div>
       </div>
     );
@@ -155,117 +157,103 @@ export default function CountdownDisplay({ onTimeUp, variant = "card" }: Countdo
 
   // Display labels for Card Variant
   const timeUnits = [
-    { label: "HOURS", value: padZero(timeLeft.hours) },
-    { label: "MINUTES", value: padZero(timeLeft.minutes) },
-    { label: "SECONDS", value: padZero(timeLeft.seconds) },
+    { label: "Hours", value: padZero(timeLeft.hours) },
+    { label: "Minutes", value: padZero(timeLeft.minutes) },
+    { label: "Seconds", value: padZero(timeLeft.seconds) },
   ];
 
   return (
-    <div className={`w-full bg-slate-900/40 backdrop-blur-md border rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full transition-all duration-1000 ${
-      isCompleted 
-        ? "border-emerald-500/40 shadow-emerald-500/5 bg-gradient-to-b from-slate-900/40 to-emerald-950/10" 
-        : "border-slate-800/80"
-    }`}>
-      {/* Glow highlight */}
-      <div className={`absolute top-0 right-1/4 w-40 h-40 rounded-full filter blur-3xl pointer-events-none transition-colors duration-1000 ${
-        isCompleted ? "bg-emerald-500/10" : "bg-amber-500/5"
-      }`} />
-
-      {/* Grid section header */}
-      <div className="space-y-1 pb-4 border-b border-slate-800/60">
-        <div className="flex items-center space-x-2">
-          <Clock className={`h-4 w-4 ${isCompleted ? "text-emerald-400" : "text-amber-500 animate-spin"}`} style={{ animationDuration: "12s" }} />
-          <span className={`font-mono text-xs tracking-widest font-bold ${isCompleted ? "text-emerald-400" : "text-amber-500"}`}>
-            {isCompleted ? "SYSTEM COMPLETED" : "SYSTEM LOCKED"}
-          </span>
+    <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-card">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-line px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-xl ${accentSoft} ${accent}`}
+          >
+            {isCompleted ? (
+              <CheckCircle2 className="h-4.5 w-4.5" />
+            ) : (
+              <Clock className="h-4.5 w-4.5" />
+            )}
+          </div>
+          <div className="leading-tight">
+            <p className={`text-sm font-semibold ${accent}`}>
+              {isCompleted ? "System online" : maintenanceConfig.systemTitle}
+            </p>
+            <p className="text-xs text-ink-600">{projectDetails.version}</p>
+          </div>
         </div>
-        <h2 className="text-sm font-semibold font-mono tracking-wider text-slate-300">
-          {maintenanceConfig.systemTitle.toUpperCase()}
-        </h2>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            isCompleted ? "bg-surface-green text-g-green" : "bg-surface-blue text-g-blue"
+          }`}
+        >
+          {isCompleted ? "Completed" : "In progress"}
+        </span>
       </div>
 
-      {/* Main Countdown Board */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4 my-auto py-4">
-        {timeUnits.map((unit, index) => (
-          <div key={unit.label} className="relative group">
-            {/* Ambient Card Glow */}
-            <div className={`absolute -inset-0.5 bg-gradient-to-b rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 filter blur ${
-              isCompleted ? "from-emerald-500/15" : "from-amber-500/10"
-            }`} />
-            
-            <div className={`relative border rounded-2xl p-4 text-center shadow-lg transition-all duration-1000 ${
-              isCompleted ? "bg-slate-950/90 border-emerald-500/20" : "bg-slate-950/70 border-slate-850"
-            }`}>
-              {/* Top light bar */}
-              <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r ${
-                isCompleted ? "from-emerald-500/40 to-emerald-500/5" : "from-amber-500/30 to-amber-500/5"
-              }`} />
-              
-              {/* Digit Container */}
-              <div className={`relative font-mono text-3xl md:text-4xl font-black tracking-tight select-all transition-colors duration-1000 ${
-                isCompleted ? "text-emerald-400" : "text-white"
-              }`}>
+      {/* Body */}
+      <div className="flex flex-1 flex-col justify-center px-6 py-8">
+        {/* Countdown digits */}
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
+          {timeUnits.map((unit) => (
+            <div
+              key={unit.label}
+              className="rounded-2xl border border-line bg-surface-alt px-3 py-5 text-center transition-colors duration-500 md:py-7"
+            >
+              <div
+                className={`tabular text-3xl font-medium tracking-tight md:text-5xl ${
+                  isCompleted ? "text-g-green" : "text-ink-900"
+                }`}
+              >
                 {unit.value}
               </div>
-
-              {/* Label */}
-              <div className="mt-2 text-[9px] md:text-[10px] font-mono font-bold tracking-widest text-slate-500">
+              <div className="mt-1.5 text-[10px] font-medium uppercase tracking-widest text-ink-400 md:text-[11px]">
                 {unit.label}
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Separator dots (Only between cards) */}
-            {index < 2 && (
-              <div className="hidden sm:flex absolute top-1/2 -right-2.5 -translate-y-1/2 flex-col space-y-1 opacity-25 z-10">
-                <span className={`h-1.5 w-1.5 rounded-full ${isCompleted ? "bg-emerald-500" : "bg-amber-500"}`} />
-                <span className={`h-1.5 w-1.5 rounded-full ${isCompleted ? "bg-emerald-500" : "bg-amber-500"}`} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Progress Sync Bar */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between font-mono text-xs text-slate-400">
-          <div className="flex items-center space-x-1.5">
-            <span className={`h-2 w-2 rounded-full ${isCompleted ? "bg-emerald-500 animate-ping" : "bg-amber-500 animate-pulse"}`} />
-            <span className="font-semibold uppercase text-slate-400 text-[10px] tracking-wider">
-              {isCompleted ? "MAINTENANCE_COMPLETED" : "DATABASE_UPGRADE_STREAM"}
+        {/* Progress bar */}
+        <div className="mt-8">
+          <div className="mb-2.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-ink-600">
+              {isCompleted ? "Upgrade complete" : "Upgrade progress"}
+            </span>
+            <span className={`tabular text-xs font-semibold ${accent}`}>
+              {(isCompleted ? 100 : timeLeft.progress).toFixed(2)}%
             </span>
           </div>
-          <span className={`font-semibold font-mono text-xs ${isCompleted ? "text-emerald-400" : "text-amber-500"}`}>
-            {isCompleted ? "100.00%" : `${(100 - timeLeft.progress).toFixed(2)}%`}
-          </span>
-        </div>
-        <div className="w-full h-1.5 bg-slate-950 rounded-full border border-slate-800/80 overflow-hidden relative">
-          <div
-            className={`h-full rounded-full transition-all duration-1000 ease-out ${
-              isCompleted ? "bg-emerald-500" : "bg-amber-500"
-            }`}
-            style={{ width: `${isCompleted ? 100 : 100 - timeLeft.progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* System Warning/Celebration banner if completed */}
-      {isCompleted && (
-        <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl p-3 flex items-center justify-between animate-bounce">
-          <div className="flex items-center space-x-2.5">
-            <AlertCircle className="h-4 w-4 shrink-0 text-emerald-400" />
-            <span className="text-xs font-mono font-medium">
-              SUCCESS: All systems migrated & fully validated.
-            </span>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-line-soft">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                isCompleted ? "bg-g-green" : "bg-g-blue"
+              }`}
+              style={{ width: `${isCompleted ? 100 : timeLeft.progress}%` }}
+            />
           </div>
-          <button 
-            onClick={fireCelebration}
-            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono font-bold text-[10px] px-3 py-1 rounded-lg transition-colors flex items-center gap-1 shrink-0"
-          >
-            <Sparkles className="h-3 w-3" />
-            BURST 🎉
-          </button>
         </div>
-      )}
+
+        {/* Completion notice */}
+        {isCompleted && (
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-g-green/25 bg-surface-green px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 text-g-green" />
+              <span className="text-xs font-medium text-ink-800">
+                All systems migrated and fully validated.
+              </span>
+            </div>
+            <button
+              onClick={fireCelebration}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-g-green px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-g-green/90"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Celebrate
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
