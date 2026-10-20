@@ -9,8 +9,6 @@ export interface AccentTokens {
   border: string;
   /** Tailwind soft surface background class */
   softBg: string;
-  /** Raw hex value for inline styles (SVG, conic gradients) */
-  hex: string;
 }
 
 export const accent: Record<AccentColor, AccentTokens> = {
@@ -19,28 +17,24 @@ export const accent: Record<AccentColor, AccentTokens> = {
     bg: "bg-g-blue",
     border: "border-g-blue/25",
     softBg: "bg-surface-blue",
-    hex: "#4285f4",
   },
   red: {
     text: "text-g-red",
     bg: "bg-g-red",
     border: "border-g-red/25",
     softBg: "bg-surface-red",
-    hex: "#ea4335",
   },
   yellow: {
     text: "text-g-yellow",
     bg: "bg-g-yellow",
     border: "border-g-yellow/35",
     softBg: "bg-surface-yellow",
-    hex: "#fbbc05",
   },
   green: {
     text: "text-g-green",
     bg: "bg-g-green",
     border: "border-g-green/25",
     softBg: "bg-surface-green",
-    hex: "#34a853",
   },
 };
 

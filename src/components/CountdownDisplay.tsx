@@ -4,18 +4,19 @@ import { maintenanceConfig, projectDetails } from "../data";
 
 interface CountdownDisplayProps {
   onTimeUp?: () => void;
-  variant?: "card" | "navbar";
   /** Notifies the parent of the live progress (0–100) and completion state. */
   onProgress?: (progress: number, isCompleted: boolean) => void;
   /** Fires the celebration burst. Owned by the parent so only one burst plays. */
   onCelebrate?: () => void;
+  /** Extra classes so the parent can control sizing within a flex layout. */
+  className?: string;
 }
 
 export default function CountdownDisplay({
   onTimeUp,
-  variant = "card",
   onProgress,
   onCelebrate,
+  className = "",
 }: CountdownDisplayProps) {
   const targetTime = new Date(maintenanceConfig.targetDate);
   const startTime = new Date(maintenanceConfig.startDate);
@@ -84,78 +85,7 @@ export default function CountdownDisplay({
   const accent = isCompleted ? "text-g-green" : "text-g-blue";
   const accentSoft = isCompleted ? "bg-surface-green" : "bg-surface-blue";
 
-  if (variant === "navbar") {
-    return (
-      <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-3 shadow-card sm:flex-nowrap">
-        {/* Left: status */}
-        <div className="flex items-center gap-2.5">
-          <span className="relative flex h-2 w-2">
-            {isCompleted ? (
-              <span className="h-2 w-2 rounded-full bg-g-green" />
-            ) : (
-              <>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-g-blue opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-g-blue" />
-              </>
-            )}
-          </span>
-          <span className={`text-sm font-semibold ${accent}`}>
-            {isCompleted ? "System online" : "System locked"}
-          </span>
-        </div>
-
-        {/* Center: countdown */}
-        <div className="flex items-center gap-3">
-          {isCompleted ? (
-            <button
-              onClick={fireCelebration}
-              className="inline-flex items-center gap-1.5 rounded-full bg-surface-green px-3 py-1 text-xs font-medium text-g-green transition-colors hover:bg-g-green hover:text-white"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Celebrate
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              {[
-                { value: timeLeft.hours, label: "h" },
-                { value: timeLeft.minutes, label: "m" },
-                { value: timeLeft.seconds, label: "s" },
-              ].map((unit) => (
-                <div
-                  key={unit.label}
-                  className="flex items-baseline gap-0.5 rounded-lg bg-surface-alt px-2 py-1"
-                >
-                  <span className="tabular text-sm font-semibold text-ink-900">
-                    {padZero(unit.value)}
-                  </span>
-                  <span className="text-[10px] text-ink-400">{unit.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right: progress */}
-        <div className="flex items-center gap-3">
-          <div className="hidden w-28 sm:block">
-            <div className="h-1 w-full overflow-hidden rounded-full bg-line-soft">
-              <div
-                className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                  isCompleted ? "bg-g-green" : "bg-g-blue"
-                }`}
-                style={{ width: `${isCompleted ? 100 : timeLeft.progress}%` }}
-              />
-            </div>
-          </div>
-          <span className={`tabular text-sm font-semibold ${accent}`}>
-            {(isCompleted ? 100 : timeLeft.progress).toFixed(1)}%
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  // Display labels for Card Variant
+  // Display labels
   const timeUnits = [
     { label: "Hours", value: padZero(timeLeft.hours) },
     { label: "Minutes", value: padZero(timeLeft.minutes) },
@@ -163,52 +93,56 @@ export default function CountdownDisplay({
   ];
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-card">
+    <div
+      className={`relative flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-card ${className}`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-line px-6 py-4">
-        <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center justify-between border-b border-line px-3.5 py-[clamp(0.375rem,1.4dvh,1rem)] sm:px-6 [@media(max-height:700px)]:py-1.5">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3 [@media(max-height:640px)]:hidden">
           <div
-            className={`flex h-9 w-9 items-center justify-center rounded-xl ${accentSoft} ${accent}`}
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 sm:rounded-xl ${accentSoft} ${accent}`}
           >
             {isCompleted ? (
-              <CheckCircle2 className="h-4.5 w-4.5" />
+              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             ) : (
-              <Clock className="h-4.5 w-4.5" />
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             )}
           </div>
-          <div className="leading-tight">
-            <p className={`text-sm font-semibold ${accent}`}>
+          <div className="min-w-0 leading-tight">
+            <p className={`truncate text-[11px] font-medium sm:text-sm ${accent}`}>
               {isCompleted ? "System online" : maintenanceConfig.systemTitle}
             </p>
-            <p className="text-xs text-ink-600">{projectDetails.version}</p>
+            <p className="hidden truncate text-xs text-ink-600 sm:block">
+              {projectDetails.version}
+            </p>
           </div>
         </div>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-xs ${
             isCompleted ? "bg-surface-green text-g-green" : "bg-surface-blue text-g-blue"
-          }`}
+          } [@media(max-height:640px)]:ml-auto`}
         >
           {isCompleted ? "Completed" : "In progress"}
         </span>
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-8">
+      <div className="flex min-h-0 flex-1 flex-col justify-center px-3.5 py-[clamp(0.375rem,1.6dvh,1.5rem)] sm:px-6 [@media(max-height:700px)]:px-3.5">
         {/* Countdown digits */}
-        <div className="grid grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
           {timeUnits.map((unit) => (
             <div
               key={unit.label}
-              className="rounded-2xl border border-line bg-surface-alt px-3 py-5 text-center transition-colors duration-500 md:py-7"
+              className="rounded-2xl border border-line bg-surface-alt px-2 py-[clamp(0.25rem,1.6dvh,1.75rem)] text-center transition-colors duration-500 sm:px-3 [@media(max-height:700px)]:py-2"
             >
               <div
-                className={`tabular text-3xl font-medium tracking-tight md:text-5xl ${
+                className={`tabular font-medium tracking-tight text-[clamp(1.25rem,4.4dvh,3rem)] ${
                   isCompleted ? "text-g-green" : "text-ink-900"
                 }`}
               >
                 {unit.value}
               </div>
-              <div className="mt-1.5 text-[10px] font-medium uppercase tracking-widest text-ink-400 md:text-[11px]">
+              <div className="mt-0.5 text-[9px] font-medium uppercase tracking-widest text-ink-400 sm:mt-1.5 sm:text-[10px] lg:text-[11px] [@media(max-height:640px)]:hidden">
                 {unit.label}
               </div>
             </div>
@@ -216,12 +150,12 @@ export default function CountdownDisplay({
         </div>
 
         {/* Progress bar */}
-        <div className="mt-8">
-          <div className="mb-2.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-ink-600">
+        <div className="mt-[clamp(0.5rem,2.2dvh,1.75rem)]">
+          <div className="mb-2 flex items-center justify-between sm:mb-2.5 [@media(max-height:640px)]:mb-1">
+            <span className="text-[11px] font-medium text-ink-600 sm:text-xs">
               {isCompleted ? "Upgrade complete" : "Upgrade progress"}
             </span>
-            <span className={`tabular text-xs font-semibold ${accent}`}>
+            <span className={`tabular text-[11px] font-semibold sm:text-xs ${accent}`}>
               {(isCompleted ? 100 : timeLeft.progress).toFixed(2)}%
             </span>
           </div>
@@ -237,19 +171,19 @@ export default function CountdownDisplay({
 
         {/* Completion notice */}
         {isCompleted && (
-          <div className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-g-green/25 bg-surface-green px-4 py-3">
-            <div className="flex items-center gap-2.5">
+          <div className="mt-[clamp(0.5rem,2.4dvh,1.5rem)] flex items-center justify-between gap-3 rounded-2xl border border-g-green/25 bg-surface-green px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="flex min-w-0 items-center gap-2.5">
               <AlertCircle className="h-4 w-4 shrink-0 text-g-green" />
-              <span className="text-xs font-medium text-ink-800">
+              <span className="truncate text-[11px] font-medium text-ink-800 sm:text-xs">
                 All systems migrated and fully validated.
               </span>
             </div>
             <button
               onClick={fireCelebration}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-g-green px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-g-green/90"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-g-green px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-g-green/90 sm:px-3 sm:text-xs"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Celebrate
+              <span className="hidden sm:inline">Celebrate</span>
             </button>
           </div>
         )}

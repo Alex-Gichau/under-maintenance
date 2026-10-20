@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* Typography — Google-first stack */
-  --font-sans: "Google Sans", "Product Sans", "Roboto", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Typography — Rubik (Google Sans alternative, rounded geometric) */
+  --font-sans: "Rubik", "Google Sans", "Product Sans", "Segoe UI", Arial, sans-serif;
+  --font-mono: "Rubik", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Google brand palette */
   --color-g-blue: #4285f4;
@@ -35,11 +35,6 @@
 
   /* Motion */
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-slide-x: slide-x 7s ease-in-out infinite;
-  --animate-bob: bob 3.2s ease-in-out infinite;
-  --animate-soft-pulse: soft-pulse 2.6s ease-in-out infinite;
 }
 
 @keyframes fade-up {
@@ -50,58 +45,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-  80%,
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-@keyframes slide-x {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-34px);
-  }
-}
-
-@keyframes bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes soft-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
   }
 }
 

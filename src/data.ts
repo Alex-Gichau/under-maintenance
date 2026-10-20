@@ -5,14 +5,8 @@
 
 export type AccentColor = "blue" | "red" | "yellow" | "green";
 
-export interface NavItem {
-  label: string;
-  href: string;
-}
-
 export interface ProjectDetails {
   appName: string;
-  shortName: string;
   version: string;
   status: "Offline" | "Maintenance" | "Upgrading" | "Live";
   alertText: string;
@@ -48,36 +42,36 @@ export interface SystemBannerConfig {
   allowDismiss: boolean;
 }
 
-export interface FeatureCard {
-  id: string;
-  icon: "database" | "shield" | "bolt" | "clock" | "check" | "chart";
-  title: string;
-  description: string;
-  accent: AccentColor;
-}
-
 export interface StatusMessage {
   title: string;
   body: string;
+  /** Headline shown once the maintenance window has closed. */
+  completeTitle: string;
+  /** Supporting copy shown once the maintenance window has closed. */
+  completeBody: string;
+  accent: AccentColor;
+}
+
+/** A single stage of the maintenance pipeline. */
+export interface UpgradeStage {
+  id: string;
+  /** Short label used in the compact stepper. */
+  label: string;
+  /** Full description used in the detailed checklist. */
+  fullLabel: string;
+  /** Percentage at which this stage is considered complete. */
+  threshold: number;
   accent: AccentColor;
 }
 
 export const projectDetails: ProjectDetails = {
-  appName: "STANDS | eRequisition",
-  shortName: "STANDS",
+  appName: "System Maintenance",
   version: "v1.0.0",
   status: "Maintenance",
   alertText: "Scheduled Maintenance In Progress",
   supportEmail: "support@pceastandrews.org",
   website: "accounts.pceastandrews.org",
 };
-
-export const navItems: NavItem[] = [
-  { label: "Overview", href: "#overview" },
-  { label: "Status", href: "#status" },
-  { label: "What's new", href: "#whats-new" },
-  { label: "Support", href: "#support" },
-];
 
 export const systemBannerConfig: SystemBannerConfig = {
   show: true,
@@ -99,41 +93,39 @@ export const maintenanceConfig: MaintenanceConfig = {
 
 export const statusMessage: StatusMessage = {
   title: "We'll be back shortly",
-  body: "We're upgrading the STANDS eRequisition platform to deliver faster approvals, stronger security, and a smoother request experience.",
+  body: "We're upgrading the system to deliver faster approvals, stronger security, and a smoother request experience.",
+  completeTitle: "We're back online",
+  completeBody: "The system is fully upgraded and back to normal. Thanks for your patience while we worked.",
   accent: "blue",
 };
 
-export const featureCards: FeatureCard[] = [
+export const upgradeStages: UpgradeStage[] = [
   {
     id: "database",
-    icon: "database",
-    title: "Faster queries",
-    description:
-      "Rebuilding indexes and restructuring tables so requisition lookups return in milliseconds instead of seconds.",
+    label: "Database",
+    fullLabel: "Database migration",
+    threshold: 25,
     accent: "blue",
   },
   {
     id: "security",
-    icon: "shield",
-    title: "Stronger security",
-    description:
-      "Rolling out refreshed access policies, audit logging, and single sign-on across every staff account.",
+    label: "Security",
+    fullLabel: "Security policies",
+    threshold: 55,
     accent: "green",
   },
   {
-    id: "uptime",
-    icon: "bolt",
-    title: "Higher uptime",
-    description:
-      "Redundant services and automated failover so an unexpected restart no longer interrupts your work.",
+    id: "application",
+    label: "Application",
+    fullLabel: "Application rollout",
+    threshold: 80,
     accent: "yellow",
   },
   {
-    id: "workflow",
-    icon: "chart",
-    title: "Simpler workflow",
-    description:
-      "Streamlined approval paths and clearer status tracking for every line of a requisition.",
+    id: "verification",
+    label: "Verification",
+    fullLabel: "Verification & handover",
+    threshold: 100,
     accent: "red",
   },
 ];
